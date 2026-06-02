@@ -1,27 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2c2012">
 <meta name="color-scheme" content="light">
 <meta name="robots" content="noindex">
-<meta name="description" content="A letter for you.">
-<title>A Letter for You</title>
+<meta name="description" content="Письмо.">
+<title>Письмо</title>
 
-<!-- One external request only: a flowing, legible cursive. Preconnect keeps it fast. -->
+<!-- One external request only: a flowing, Cyrillic-capable cursive. Preconnect keeps it fast. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marck+Script&display=swap">
 
 <style>
-  /* ----- Swap the handwriting here -----------------------------------------
-     Active hand: 'Great Vibes' — an elegant, flowing formal calligraphy script.
-     To change it, edit the Google Fonts URL above + the --hand var below, e.g.
-       'Dancing Script', 'Mrs Saint Delafield', or 'Dawning of a New Day'.
-     Note: Great Vibes ships a single weight (400), so keep font-weight at 400. */
+  /* ----- Handwriting font --------------------------------------------------
+     Active hand: 'Marck Script' — an elegant connected cursive that, unlike
+     Great Vibes / Dancing Script (Latin-only), INCLUDES CYRILLIC glyphs,
+     which the Russian text requires.
+     To swap, edit the Google Fonts URL above + --hand below, and pick a font
+     that ALSO supports Cyrillic, e.g. 'Caveat' (more legible) or
+     'Bad Script' (most authentic Russian handwriting).                       */
   :root{
-    --hand: 'Great Vibes', 'Snell Roundhand', 'Segoe Script', cursive;
+    --hand: 'Marck Script', 'Segoe Script', cursive;
     --ink: #3b2a14;                 /* aged sepia ink */
     --paper-1: #f5e9ce;
     --paper-2: #ead9b2;
@@ -51,14 +53,14 @@
     background-attachment:fixed;
   }
 
-  /* ---------- Stage: centres the sheet, holds safe-area margins ---------- */
+  /* ---------- Stage: holds safe-area margins; top-aligned for a long letter ---------- */
   .stage{
     min-height:100vh; min-height:100dvh;
-    display:flex; align-items:center; justify-content:center;
+    display:flex; align-items:flex-start; justify-content:center;
     padding:
       max(env(safe-area-inset-top), 22px)
       max(env(safe-area-inset-right), 16px)
-      max(env(safe-area-inset-bottom), 22px)
+      max(env(safe-area-inset-bottom), 28px)
       max(env(safe-area-inset-left), 16px);
   }
 
@@ -68,6 +70,7 @@
     isolation:isolate;
     width:100%;
     max-width:min(92vw, 30rem);
+    min-height:58vh;                 /* looks like a real sheet before/while writing */
     /* generous bottom padding so the trailing cursor never clips */
     padding:
       clamp(1.8rem, 7.5vw, 2.9rem)
@@ -88,36 +91,36 @@
   }
   /* aged, darkened edges */
   .sheet::after{
-    content:""; position:absolute; inset:0; z-index:1;
+    content:""; position:absolute; inset:0; z-index:2;
     border-radius:inherit; pointer-events:none;
     box-shadow:
       inset 0 0 60px rgba(70,46,16,.16),
       inset 0 0 14px rgba(70,46,16,.12);
-    background:radial-gradient(120% 120% at 50% 50%, transparent 68%, rgba(70,46,16,.14));
+    background:radial-gradient(120% 120% at 50% 50%, transparent 72%, rgba(70,46,16,.13));
   }
 
-  /* ---------- Letter text: ghost reserves height, ink animates over it ---------- */
-  .letter{ position:relative; z-index:0; }
+  .letter{ position:relative; z-index:1; }
 
-  .ghost,
+  /* ---------- Letter text ---------- */
   .ink{
     font-family:var(--hand);
-    font-weight:400;                              /* Great Vibes ships one weight */
-    font-size:clamp(1.7rem, 6.8vw, 2.3rem);       /* sized up: Great Vibes is delicate */
-    line-height:1.55;
+    font-weight:400;
+    font-size:clamp(1.3rem, 5.2vw, 1.62rem);   /* tuned for Marck Script + a long letter */
+    line-height:1.66;
     letter-spacing:.2px;
-    word-spacing:.04em;
+    word-spacing:.03em;
     white-space:pre-wrap;
     overflow-wrap:break-word;
     word-break:normal;
-    text-shadow:0 0 1px rgba(59,42,20,.22);   /* faint ink bleed */
-  }
-  /* invisible, but kept in flow (reserves height) and in the a11y tree (screen readers read it) */
-  .ghost{ opacity:0; }
-  /* the visible, animated copy painted on top */
-  .ink{
-    position:absolute; inset:0; z-index:1;
+    text-shadow:0 0 1px rgba(59,42,20,.22);      /* faint ink bleed */
     -webkit-user-select:none; user-select:none;
+  }
+
+  /* screen-reader-only full text (kept out of the visual layout) */
+  .sr-only{
+    position:absolute !important; width:1px; height:1px;
+    padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0,0,0,0); white-space:nowrap; border:0;
   }
 
   /* ---------- Ink-pen tip cursor ---------- */
@@ -182,9 +185,9 @@
   }
   .seal-label{
     font-family:ui-serif, Georgia,'Times New Roman',serif;
-    text-transform:uppercase; letter-spacing:.28em;
-    font-size:.72rem; padding-left:.28em;
-    color:#ecdcb9; opacity:.92;
+    text-transform:uppercase; letter-spacing:.24em;
+    font-size:.72rem; padding-left:.24em;
+    color:#ecdcb9; opacity:.92; text-align:center;
   }
 
   /* break animation on tap */
@@ -197,43 +200,47 @@
   @keyframes ring{ 0%{ transform:scale(.9); opacity:.7; } 100%{ transform:scale(1.28); opacity:0; } }
   @keyframes crack{ 40%{ transform:scale(1.08) rotate(-3deg); } 100%{ transform:scale(.58) rotate(7deg); opacity:0; } }
 
-  /* ---------- Respect reduced-motion: keep it calm, still readable ---------- */
+  /* ---------- Respect reduced-motion ---------- */
   @media (prefers-reduced-motion: reduce){
     .seal-btn, .wax::after{ animation:none; }
-    .cursor{ animation:none; }
-    .sheet.writing .cursor{ animation:none; }
+    .cursor, .sheet.writing .cursor{ animation:none; }
   }
 </style>
 
 <!-- No-JS fallback: reveal the letter, hide the seal -->
 <noscript><style>
   .overlay{ display:none !important; }
-  .ghost{ opacity:1 !important; }
   .ink{ display:none !important; }
+  #ghost{
+    position:static !important; width:auto; height:auto; margin:0;
+    clip:auto; overflow:visible; white-space:pre-wrap;
+    font-family:var(--hand); font-size:clamp(1.3rem,5.2vw,1.62rem); line-height:1.66;
+  }
 </style></noscript>
 </head>
 
 <body>
   <main class="stage">
-    <article class="sheet" id="sheet" aria-label="A handwritten letter">
+    <article class="sheet" id="sheet" aria-label="Рукописное письмо">
       <div class="letter">
-        <!-- Single source of truth for the text. JS reads this, then animates a copy on top.
+        <!-- Full text, verbatim. JS reads this, then animates a copy on top.
              Lines sit at column 0 so white-space:pre-wrap shows no stray indentation. -->
-<div class="ghost" id="ghost">To the one who holds this token,
+<p class="sr-only" id="ghost">Сидел я , чистил гранат и думал о мире, мне вспомнились слова из любимой книги Достоевского "Идиот": "Заметьте, милый Князь, что нет ничего обиднее человеку нашего времени и племени, как сказать ему, что он не оригинален, без особенных талантов, человек обыкновенный" , и я начал писать эти слова , которые я сам вряд ли смогу объяснить.
 
-You have successfully unlocked this hidden message. Some secrets are meant to be carried in secret, passed down through physical objects rather than digital noise. Thank you for scanning.
+Настолько четко это описывает людей вокруг и то, как они не понимают, что это и есть комплимент высшей формы — быть обычным, видеть красоту там, где остальные не видят ничего, понять, что у дерева тоже есть душа, и говорить с ней.Жить и наслаждаться.Иногда простым людям нужны лишь правильные слова и идеи, которые описывают их и других — тогда они станут как утренний свет, который не спрашивает разрешения, чтобы разогнать тьму, так и простая душа просто светит своей искренностью, меняя всё вокруг одним своим присутствием.
 
-Yours truly,
-The Creator</div>
+Интересные образы строятся в голове, когда думаешь о душе человека. Самая обычная, простая, чистая душа — без прикрас, без спектаклей. Вечности не хватит, чтобы изучить такую душу — она бездонная, как ночное небо, где каждая звезда — это отдельная, честная история жизни. Вглядываясь в такую глубину, понимаешь, что здесь нет места фальшивым декорациям. Такие люди таят в себе огромный, честный, добрый мир. Они просто живут, пока другие ищут способы жить, и эти поиски заставляют их строить сценарии вокруг , теряя истинное лицо.
+
+Настоящая душа никогда не меняется.В Древней Греции интересно воспринимали и объясняли человека. У них был интересный термин — "Агапэ" — любовь к самой сути, к душе человека. Есть особая красота в том , как наблюдать за тем, как распускается цветок — ты не заставляешь его раскрыться, ты просто восхищаешься тем, что это происходит прямо сейчас, перед твоими глазами, и желаешь этому свету только добра».</p>
         <div class="ink" id="ink" aria-hidden="true"><span id="written"></span><span class="cursor" id="cursor"></span></div>
       </div>
     </article>
   </main>
 
   <div class="overlay" id="overlay">
-    <button class="seal-btn" id="seal" type="button" aria-label="Break the seal to open the letter">
+    <button class="seal-btn" id="seal" type="button" aria-label="Открыть письмо">
       <span class="wax" aria-hidden="true"><span class="monogram">&#10086;</span></span>
-      <span class="seal-label">Tap to break the seal</span>
+      <span class="seal-label">Нажмите, чтобы открыть</span>
     </button>
   </div>
 
@@ -248,7 +255,7 @@ The Creator</div>
   var overlay = document.getElementById('overlay');
   var seal    = document.getElementById('seal');
 
-  // The letter, read straight from the ghost element (one source of truth).
+  // The letter, read straight from the screen-reader copy (one source of truth).
   var LETTER = ghost.textContent.replace(/\r\n/g, '\n');
 
   var reduce = window.matchMedia &&
@@ -262,7 +269,7 @@ The Creator</div>
   var AudioFX = (function(){
     var ctx, master, noiseBuf;
     var scratchSrc, scratchGain, lfo, running = false;
-    var BED = 0.05;   // resting scratch volume (low, per the brief)
+    var BED = 0.05;   // resting scratch volume (low)
 
     function ensure(){
       if (ctx) return;
@@ -284,8 +291,8 @@ The Creator</div>
       return noiseBuf;
     }
 
-    // Short paper unfold / seal break: a filtered noise burst + a soft low settle.
-    function seal(){
+    // Short paper unfold / seal break.
+    function seal_(){
       if (!ctx) return;
       var now = ctx.currentTime;
 
@@ -325,7 +332,7 @@ The Creator</div>
       var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 800;
       var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 0.6;
 
-      var trem = ctx.createGain(); trem.gain.value = 0.55;        // amplitude wobble
+      var trem = ctx.createGain(); trem.gain.value = 0.55;
       lfo = ctx.createOscillator(); lfo.type = 'sawtooth'; lfo.frequency.value = 13;
       var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.45;
       lfo.connect(lfoGain); lfoGain.connect(trem.gain);
@@ -367,21 +374,31 @@ The Creator</div>
       }, (fade + 0.1) * 1000);
     }
 
-    return { ensure:ensure, resume:resume, seal:seal,
+    return { ensure:ensure, resume:resume, seal:seal_,
              startScratch:startScratch, tick:tick, stopScratch:stopScratch };
   })();
 
   /* ------------------------------------------------------------------ *
-   *  Human-paced typing                                                *
+   *  Human-paced typing (tuned shorter because this letter is long)    *
    * ------------------------------------------------------------------ */
   function delayFor(ch, next){
-    var d = 30 + Math.random() * 60;                 // base 30-90ms keystroke
-    if (ch === ' ')                       d *= 0.7;
-    else if (ch === ',')                  d += 130 + Math.random() * 120;
-    else if (ch === '.' || ch === '!' || ch === '?') d += 300 + Math.random() * 240;
-    else if (ch === '\n')                 d += (next === '\n' ? 520 : 300) + Math.random() * 180;
-    if (Math.random() < 0.05)             d += 160 + Math.random() * 260;   // occasional hesitation
+    var d = 16 + Math.random() * 30;                 // base ~16-46ms keystroke
+    if (ch === ' ')                       d *= 0.6;
+    else if (ch === ',')                  d += 90  + Math.random() * 110;
+    else if (ch === ':')                  d += 120 + Math.random() * 120;
+    else if (ch === '.' || ch === '!' || ch === '?' || ch === '»') d += 240 + Math.random() * 220;
+    else if (ch === '\n')                 d += (next === '\n' ? 420 : 240) + Math.random() * 160;
+    if (Math.random() < 0.03)             d += 120 + Math.random() * 200;   // occasional hesitation
     return d;
+  }
+
+  // Keep the writing line comfortably in view as the sheet grows.
+  function keepCursorInView(){
+    var r = cursor.getBoundingClientRect();
+    var pad = 90;
+    if (r.bottom > window.innerHeight - pad){
+      window.scrollBy(0, r.bottom - (window.innerHeight - pad));
+    }
   }
 
   function finish(){
@@ -404,8 +421,10 @@ The Creator</div>
         var ch = LETTER.charAt(i);
         written.textContent += ch;
         if (ch.trim() !== '') AudioFX.tick();
+        if ((i & 3) === 0) keepCursorInView();    // throttle the auto-scroll
         await sleep(delayFor(ch, LETTER.charAt(i + 1)));
       }
+      keepCursorInView();
       finish();
     })();
   }
