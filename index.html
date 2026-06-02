@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2c2012">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex">
+<meta name="description" content="A letter for you.">
+<title>A Letter for You</title>
+
+<!-- One external request only: a flowing, legible cursive. Preconnect keeps it fast. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+
+<style>
+  /* ----- Swap the handwriting here -----------------------------------------
+     Active hand: 'Great Vibes' — an elegant, flowing formal calligraphy script.
+     To change it, edit the Google Fonts URL above + the --hand var below, e.g.
+       'Dancing Script', 'Mrs Saint Delafield', or 'Dawning of a New Day'.
+     Note: Great Vibes ships a single weight (400), so keep font-weight at 400. */
+  :root{
+    --hand: 'Great Vibes', 'Snell Roundhand', 'Segoe Script', cursive;
+    --ink: #3b2a14;                 /* aged sepia ink */
+    --paper-1: #f5e9ce;
+    --paper-2: #ead9b2;
+    --paper-3: #e3cfa3;
+    /* faint paper grain, generated inline so the page stays self-contained */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; }
+
+  body{
+    min-height:100vh; min-height:100dvh;
+    color:var(--ink);
+    font-family:var(--hand);
+    overflow-x:hidden;
+    -webkit-text-size-adjust:100%;
+    -webkit-font-smoothing:antialiased;
+    background-color:#43331c;
+    background-image:
+      var(--grain),
+      radial-gradient(135% 120% at 50% 16%,
+        rgba(140,108,62,.95) 0%,
+        rgba(75,55,32,.95) 52%,
+        rgba(44,32,18,1) 100%);
+    background-attachment:fixed;
+  }
+
+  /* ---------- Stage: centres the sheet, holds safe-area margins ---------- */
+  .stage{
+    min-height:100vh; min-height:100dvh;
+    display:flex; align-items:center; justify-content:center;
+    padding:
+      max(env(safe-area-inset-top), 22px)
+      max(env(safe-area-inset-right), 16px)
+      max(env(safe-area-inset-bottom), 22px)
+      max(env(safe-area-inset-left), 16px);
+  }
+
+  /* ---------- The physical sheet of paper ---------- */
+  .sheet{
+    position:relative;
+    isolation:isolate;
+    width:100%;
+    max-width:min(92vw, 30rem);
+    /* generous bottom padding so the trailing cursor never clips */
+    padding:
+      clamp(1.8rem, 7.5vw, 2.9rem)
+      clamp(1.5rem, 6.5vw, 2.4rem)
+      clamp(2.4rem, 9vw, 3.2rem);
+    border-radius:5px;
+    background-image:
+      var(--grain),
+      radial-gradient(closest-side at 17% 12%, rgba(150,112,58,.20), transparent 70%),
+      radial-gradient(closest-side at 86% 22%, rgba(122,84,42,.16), transparent 72%),
+      radial-gradient(closest-side at 74% 90%, rgba(140,100,52,.17), transparent 70%),
+      radial-gradient(closest-side at 26% 82%, rgba(112,76,38,.14), transparent 72%),
+      linear-gradient(168deg, var(--paper-1) 0%, var(--paper-2) 58%, var(--paper-3) 100%);
+    box-shadow:
+      0 1px 1px rgba(0,0,0,.10),
+      0 10px 22px rgba(38,25,9,.32),
+      0 26px 48px rgba(38,25,9,.34);
+  }
+  /* aged, darkened edges */
+  .sheet::after{
+    content:""; position:absolute; inset:0; z-index:1;
+    border-radius:inherit; pointer-events:none;
+    box-shadow:
+      inset 0 0 60px rgba(70,46,16,.16),
+      inset 0 0 14px rgba(70,46,16,.12);
+    background:radial-gradient(120% 120% at 50% 50%, transparent 68%, rgba(70,46,16,.14));
+  }
+
+  /* ---------- Letter text: ghost reserves height, ink animates over it ---------- */
+  .letter{ position:relative; z-index:0; }
+
+  .ghost,
+  .ink{
+    font-family:var(--hand);
+    font-weight:400;                              /* Great Vibes ships one weight */
+    font-size:clamp(1.7rem, 6.8vw, 2.3rem);       /* sized up: Great Vibes is delicate */
+    line-height:1.55;
+    letter-spacing:.2px;
+    word-spacing:.04em;
+    white-space:pre-wrap;
+    overflow-wrap:break-word;
+    word-break:normal;
+    text-shadow:0 0 1px rgba(59,42,20,.22);   /* faint ink bleed */
+  }
+  /* invisible, but kept in flow (reserves height) and in the a11y tree (screen readers read it) */
+  .ghost{ opacity:0; }
+  /* the visible, animated copy painted on top */
+  .ink{
+    position:absolute; inset:0; z-index:1;
+    -webkit-user-select:none; user-select:none;
+  }
+
+  /* ---------- Ink-pen tip cursor ---------- */
+  .cursor{
+    display:inline-block;
+    width:2px; height:1.05em;
+    margin:0 1px; vertical-align:-0.16em;
+    background:linear-gradient(var(--ink), rgba(59,42,20,.35));
+    border-radius:1px;
+    box-shadow:0 0 2px rgba(59,42,20,.55);
+    animation:blink 1s steps(1,end) infinite;
+  }
+  .sheet.writing .cursor{ animation:nib .14s ease-in-out infinite alternate; opacity:1; }
+  .cursor.done{ opacity:0; animation:none; transition:opacity .5s ease; }
+  @keyframes blink{ 50%{ opacity:0; } }
+  @keyframes nib{ from{ transform:translateY(0) rotate(0); } to{ transform:translateY(-.5px) rotate(-2deg); } }
+
+  /* ---------- "Break the seal" overlay ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    background:radial-gradient(120% 120% at 50% 40%, rgba(40,28,14,.45), rgba(20,12,5,.74));
+    -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+    transition:opacity .7s ease, visibility .7s ease;
+  }
+  .overlay.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+
+  .seal-btn{
+    -webkit-appearance:none; appearance:none;
+    border:0; background:transparent; cursor:pointer;
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    display:flex; flex-direction:column; align-items:center; gap:1.15rem;
+    padding:1rem; color:#f1e3c4;
+    animation:floaty 3.6s ease-in-out infinite;
+  }
+  .seal-btn:active{ transform:scale(.96); }
+
+  .wax{
+    position:relative;
+    width:118px; height:118px;
+    border-radius:48% 52% 50% 50% / 52% 48% 52% 48%;   /* organic blob */
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 38% 30%, #b8443c 0%, #7c211d 60%, #571310 100%);
+    box-shadow:
+      inset 0 3px 7px rgba(255,180,170,.34),
+      inset 0 -9px 16px rgba(0,0,0,.46),
+      0 9px 22px rgba(0,0,0,.46),
+      0 2px 5px rgba(0,0,0,.42);
+  }
+  .wax::after{    /* inviting pulse ring */
+    content:""; position:absolute; inset:-11px;
+    border-radius:inherit; border:1px solid rgba(241,227,196,.40);
+    animation:ring 2.4s ease-out infinite;
+  }
+  .monogram{
+    font-family:Georgia,'Times New Roman',serif;
+    font-size:2.7rem; line-height:1;
+    color:rgba(52,11,9,.62);
+    text-shadow:0 1px 0 rgba(255,172,160,.32), 0 -1px 1px rgba(0,0,0,.42);
+    transform:translateY(1px);
+  }
+  .seal-label{
+    font-family:ui-serif, Georgia,'Times New Roman',serif;
+    text-transform:uppercase; letter-spacing:.28em;
+    font-size:.72rem; padding-left:.28em;
+    color:#ecdcb9; opacity:.92;
+  }
+
+  /* break animation on tap */
+  .seal-btn.breaking{ animation:none; }
+  .seal-btn.breaking .wax{ animation:crack .6s ease forwards; }
+  .seal-btn.breaking .wax::after{ animation:none; opacity:0; }
+  .seal-btn.breaking .seal-label{ opacity:0; transition:opacity .3s ease; }
+
+  @keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+  @keyframes ring{ 0%{ transform:scale(.9); opacity:.7; } 100%{ transform:scale(1.28); opacity:0; } }
+  @keyframes crack{ 40%{ transform:scale(1.08) rotate(-3deg); } 100%{ transform:scale(.58) rotate(7deg); opacity:0; } }
+
+  /* ---------- Respect reduced-motion: keep it calm, still readable ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .seal-btn, .wax::after{ animation:none; }
+    .cursor{ animation:none; }
+    .sheet.writing .cursor{ animation:none; }
+  }
+</style>
+
+<!-- No-JS fallback: reveal the letter, hide the seal -->
+<noscript><style>
+  .overlay{ display:none !important; }
+  .ghost{ opacity:1 !important; }
+  .ink{ display:none !important; }
+</style></noscript>
+</head>
+
+<body>
+  <main class="stage">
+    <article class="sheet" id="sheet" aria-label="A handwritten letter">
+      <div class="letter">
+        <!-- Single source of truth for the text. JS reads this, then animates a copy on top.
+             Lines sit at column 0 so white-space:pre-wrap shows no stray indentation. -->
+<div class="ghost" id="ghost">To the one who holds this token,
+
+You have successfully unlocked this hidden message. Some secrets are meant to be carried in secret, passed down through physical objects rather than digital noise. Thank you for scanning.
+
+Yours truly,
+The Creator</div>
+        <div class="ink" id="ink" aria-hidden="true"><span id="written"></span><span class="cursor" id="cursor"></span></div>
+      </div>
+    </article>
+  </main>
+
+  <div class="overlay" id="overlay">
+    <button class="seal-btn" id="seal" type="button" aria-label="Break the seal to open the letter">
+      <span class="wax" aria-hidden="true"><span class="monogram">&#10086;</span></span>
+      <span class="seal-label">Tap to break the seal</span>
+    </button>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var ghost   = document.getElementById('ghost');
+  var written = document.getElementById('written');
+  var cursor  = document.getElementById('cursor');
+  var sheet   = document.getElementById('sheet');
+  var overlay = document.getElementById('overlay');
+  var seal    = document.getElementById('seal');
+
+  // The letter, read straight from the ghost element (one source of truth).
+  var LETTER = ghost.textContent.replace(/\r\n/g, '\n');
+
+  var reduce = window.matchMedia &&
+               window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  /* ------------------------------------------------------------------ *
+   *  Audio: everything is synthesised with the Web Audio API so the    *
+   *  page stays self-contained and has zero audio files to rot.        *
+   * ------------------------------------------------------------------ */
+  var AudioFX = (function(){
+    var ctx, master, noiseBuf;
+    var scratchSrc, scratchGain, lfo, running = false;
+    var BED = 0.05;   // resting scratch volume (low, per the brief)
+
+    function ensure(){
+      if (ctx) return;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;                 // unsupported -> animation runs silently
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = 0.9;
+      master.connect(ctx.destination);
+    }
+    function resume(){ if (ctx && ctx.state === 'suspended') ctx.resume(); }
+
+    function noise(){
+      if (noiseBuf) return noiseBuf;
+      var len = Math.floor(ctx.sampleRate * 2);
+      noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var d = noiseBuf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      return noiseBuf;
+    }
+
+    // Short paper unfold / seal break: a filtered noise burst + a soft low settle.
+    function seal(){
+      if (!ctx) return;
+      var now = ctx.currentTime;
+
+      var src = ctx.createBufferSource();
+      src.buffer = noise();
+      var bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = 0.8;
+      bp.frequency.setValueAtTime(900, now);
+      bp.frequency.exponentialRampToValueAtTime(2600, now + 0.18);
+      bp.frequency.exponentialRampToValueAtTime(1400, now + 0.50);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.exponentialRampToValueAtTime(0.50, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.06, now + 0.22);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.60);
+      src.connect(bp); bp.connect(g); g.connect(master);
+      src.start(now); src.stop(now + 0.65);
+
+      var o = ctx.createOscillator(), og = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(120, now);
+      o.frequency.exponentialRampToValueAtTime(60, now + 0.25);
+      og.gain.setValueAtTime(0.0001, now);
+      og.gain.exponentialRampToValueAtTime(0.16, now + 0.03);
+      og.gain.exponentialRampToValueAtTime(0.0001, now + 0.40);
+      o.connect(og); og.connect(master);
+      o.start(now); o.stop(now + 0.45);
+    }
+
+    // Looping low scratch bed, started while writing.
+    function startScratch(){
+      if (!ctx || running) return;
+      running = true;
+      scratchSrc = ctx.createBufferSource();
+      scratchSrc.buffer = noise(); scratchSrc.loop = true;
+
+      var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 800;
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 0.6;
+
+      var trem = ctx.createGain(); trem.gain.value = 0.55;        // amplitude wobble
+      lfo = ctx.createOscillator(); lfo.type = 'sawtooth'; lfo.frequency.value = 13;
+      var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.45;
+      lfo.connect(lfoGain); lfoGain.connect(trem.gain);
+
+      scratchGain = ctx.createGain(); scratchGain.gain.value = 0.0001;
+
+      scratchSrc.connect(hp); hp.connect(bp); bp.connect(trem);
+      trem.connect(scratchGain); scratchGain.connect(master);
+
+      lfo.start(); scratchSrc.start();
+      scratchGain.gain.exponentialRampToValueAtTime(BED, ctx.currentTime + 0.3);
+    }
+
+    // Tiny per-keystroke accent so each letter has its own scratch.
+    function tick(){
+      if (!ctx || !running || !scratchGain) return;
+      var t = ctx.currentTime;
+      scratchGain.gain.cancelScheduledValues(t);
+      scratchGain.gain.setValueAtTime(Math.max(scratchGain.gain.value, 0.0001), t);
+      scratchGain.gain.linearRampToValueAtTime(BED * 2.1, t + 0.015);
+      scratchGain.gain.exponentialRampToValueAtTime(BED, t + 0.085);
+    }
+
+    // Smoothly fade the bed out the moment writing finishes.
+    function stopScratch(fade){
+      if (!ctx || !running) return;
+      running = false;
+      fade = fade || 0.6;
+      var t = ctx.currentTime;
+      if (scratchGain){
+        scratchGain.gain.cancelScheduledValues(t);
+        scratchGain.gain.setValueAtTime(Math.max(scratchGain.gain.value, 0.0001), t);
+        scratchGain.gain.exponentialRampToValueAtTime(0.0001, t + fade);
+      }
+      var s = scratchSrc, l = lfo;
+      setTimeout(function(){
+        try{ if (s) s.stop(); }catch(e){}
+        try{ if (l) l.stop(); }catch(e){}
+      }, (fade + 0.1) * 1000);
+    }
+
+    return { ensure:ensure, resume:resume, seal:seal,
+             startScratch:startScratch, tick:tick, stopScratch:stopScratch };
+  })();
+
+  /* ------------------------------------------------------------------ *
+   *  Human-paced typing                                                *
+   * ------------------------------------------------------------------ */
+  function delayFor(ch, next){
+    var d = 30 + Math.random() * 60;                 // base 30-90ms keystroke
+    if (ch === ' ')                       d *= 0.7;
+    else if (ch === ',')                  d += 130 + Math.random() * 120;
+    else if (ch === '.' || ch === '!' || ch === '?') d += 300 + Math.random() * 240;
+    else if (ch === '\n')                 d += (next === '\n' ? 520 : 300) + Math.random() * 180;
+    if (Math.random() < 0.05)             d += 160 + Math.random() * 260;   // occasional hesitation
+    return d;
+  }
+
+  function finish(){
+    AudioFX.stopScratch(0.7);
+    sheet.classList.remove('writing');
+    cursor.classList.add('done');
+  }
+
+  function writeLetter(){
+    return (async function(){
+      await sleep(1000);                       // deliberate pause on blank paper
+      if (reduce){                             // reduced motion: reveal at once
+        written.textContent = LETTER;
+        finish();
+        return;
+      }
+      AudioFX.startScratch();
+      sheet.classList.add('writing');
+      for (var i = 0; i < LETTER.length; i++){
+        var ch = LETTER.charAt(i);
+        written.textContent += ch;
+        if (ch.trim() !== '') AudioFX.tick();
+        await sleep(delayFor(ch, LETTER.charAt(i + 1)));
+      }
+      finish();
+    })();
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  Opening the letter (the user gesture that unlocks audio)          *
+   * ------------------------------------------------------------------ */
+  var opened = false;
+  function open(){
+    if (opened) return;
+    opened = true;
+    AudioFX.ensure();
+    AudioFX.resume();
+    AudioFX.seal();                 // fire the first sound inside the gesture (iOS requirement)
+    seal.classList.add('breaking');
+    overlay.classList.add('hidden');
+    writeLetter();
+  }
+  seal.addEventListener('click', open);
+})();
+</script>
+</body>
+</html>
