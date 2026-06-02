@@ -1,0 +1,17 @@
+# --- OS / file-system cruft ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+System Volume Information/
+
+# --- Editors / IDEs ---
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Logs & temp ---
+*.log
+*.tmp
