@@ -160,28 +160,27 @@
     clip:rect(0,0,0,0); white-space:nowrap; border:0;
   }
 
-  /* ---------- Quill-pen cursor (a feather that writes the letter) ---------- */
+  /* ---------- Quill-pen cursor (a dark feather that traces the handwriting) ---------- */
   .cursor{
     position:relative;
     display:inline-block;
-    width:0.12em; height:1.05em;
-    vertical-align:-0.16em;
+    width:0.1em; height:1.05em;
+    vertical-align:-0.18em;
   }
   .cursor .quill{
     position:absolute;
-    left:-0.45em; bottom:-0.16em;
-    width:1.05em; height:2.78em;
+    left:-0.14em; bottom:-0.18em;       /* nib (lower-left of the feather) rests on the writing line */
+    width:1.12em; height:1.9em;
     overflow:visible;
-    transform-origin:52% 92%;          /* pivot at the nib */
-    transform:rotate(16deg);
-    filter:drop-shadow(0 2px 2px rgba(40,28,10,.28));
+    transform-origin:18% 92%;           /* pivot at the nib for the writing motion */
+    filter:drop-shadow(0 1.5px 1.5px rgba(20,14,5,.42));
     pointer-events:none;
   }
-  .sheet.writing .cursor .quill{ animation:quiver 1.1s ease-in-out infinite alternate; }
+  .sheet.writing .cursor .quill{ animation:quiver 1s ease-in-out infinite alternate; }
   .cursor.done{ opacity:0; transition:opacity .6s ease; }
   @keyframes quiver{
-    from{ transform:rotate(16deg) translateY(0); }
-    to{   transform:rotate(13deg) translateY(-0.6px); }
+    from{ transform:rotate(0deg)    translateY(0); }
+    to{   transform:rotate(-2.6deg) translateY(-0.4px); }
   }
 
   /* ---------- "Break the seal" overlay ---------- */
@@ -332,7 +331,7 @@
 Интересные образы строятся в голове, когда думаешь о душе человека. Самая обычная, простая, чистая душа — без прикрас, без спектаклей. Вечности не хватит, чтобы изучить такую душу — она бездонная, как ночное небо, где каждая звезда — это отдельная, честная история жизни. Вглядываясь в такую глубину, понимаешь, что здесь нет места фальшивым декорациям. Такие люди таят в себе огромный, честный, добрый мир. Они просто живут, пока другие ищут способы жить, и эти поиски заставляют их строить сценарии вокруг , теряя истинное лицо.
 
 Настоящая душа никогда не меняется.В Древней Греции интересно воспринимали и объясняли человека. У них был интересный термин — "Агапэ" — любовь к самой сути, к душе человека. Есть особая красота в том , как наблюдать за тем, как распускается цветок — ты не заставляешь его раскрыться, ты просто восхищаешься тем, что это происходит прямо сейчас, перед твоими глазами, и желаешь этому свету только добра».</p>
-        <div class="ink" id="ink" aria-hidden="true"><span id="written"></span><span class="cursor" id="cursor"><svg class="quill" viewBox="0 0 64 170"><defs><linearGradient id="vane" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fdfbf4"/><stop offset="1" stop-color="#d8cdb4"/></linearGradient></defs><path d="M32 10 C 52 40, 50 92, 33 120 C 16 92, 14 40, 32 10 Z" fill="url(#vane)" stroke="rgba(90,70,45,.45)" stroke-width="1"/><g stroke="rgba(120,98,64,.42)" stroke-width="1" stroke-linecap="round"><line x1="33" y1="40" x2="46" y2="33"/><line x1="33" y1="58" x2="48" y2="52"/><line x1="33" y1="76" x2="47" y2="72"/><line x1="33" y1="94" x2="44" y2="92"/><line x1="33" y1="40" x2="20" y2="33"/><line x1="33" y1="58" x2="18" y2="52"/><line x1="33" y1="76" x2="19" y2="72"/><line x1="33" y1="94" x2="22" y2="92"/></g><path d="M32 12 C 33 50, 33 90, 33 122 L 33 150" fill="none" stroke="#6b573f" stroke-width="2.2" stroke-linecap="round"/><path d="M33 149 l-3.4 10 l3.4 -2.4 l3.4 2.4 z" fill="#3a2710"/></svg></span></div>
+        <div class="ink" id="ink" aria-hidden="true"><span id="written"></span><span class="cursor" id="cursor"><svg class="quill" viewBox="0 0 100 170"><defs><linearGradient id="vane" x1="0.15" y1="0.1" x2="0.8" y2="0.95"><stop offset="0" stop-color="#41454f"/><stop offset="0.5" stop-color="#23252d"/><stop offset="1" stop-color="#0e0f14"/></linearGradient></defs><path d="M84 14 C 99 40, 92 76, 64 100 C 50 112, 38 122, 28 134 C 33 112, 40 84, 52 60 C 61 40, 71 24, 84 14 Z" fill="url(#vane)"/><path d="M84 14 C 68 30, 56 52, 47 76 C 39 98, 32 118, 24 140 L 18 156" fill="none" stroke="#0b0c10" stroke-width="2.3" stroke-linecap="round"/><path d="M82 20 C 67 34, 56 54, 48 76" fill="none" stroke="rgba(150,160,180,.30)" stroke-width="1"/><g stroke="#0a0b0f" stroke-width="1.1" stroke-linecap="round" opacity=".5"><path d="M60 40 C 66 35, 73 33, 80 33"/><path d="M53 58 C 60 53, 68 51, 75 53"/><path d="M46 78 C 54 74, 62 73, 69 76"/><path d="M40 98 C 48 95, 56 95, 62 99"/></g><path d="M18 156 l-2.5 8 l7 -2.4 z" fill="#0a0b0f"/></svg></span></div>
       </div>
     </article>
   </main>
@@ -347,7 +346,7 @@
   <!-- The song — the soundtrack the writing is timed to. Breaking the seal starts it, and
        the letter finishes on its last note. Put your file next to this page as
        cest-la-vie-lily.mp3 (any length — the writing auto-fits the song's duration). -->
-  <audio id="song" preload="none" src="cest-la-vie-lily.mp3"></audio>
+  <audio id="song" preload="auto" src="cest-la-vie-lily.mp3"></audio>
   <button class="play-btn" id="playBtn" type="button" aria-label="Включить песню" aria-pressed="false">
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path class="ico-play" d="M8 5.4v13.2l11-6.6z"/>
@@ -604,21 +603,26 @@
     seal.classList.add('breaking');
     overlay.classList.add('hidden');
     if (playBtn) playBtn.classList.add('show');     // the song control rides in on the right
+    if (song) song.preload = 'auto';                // keep buffering (already 'auto' in markup)
 
-    if (reduce){                    // reduced motion: reveal the letter at once, still play the song
+    if (reduce){                    // reduced motion: reveal at once, still play the song
       written.textContent = LETTER; shown = N;
       cursor.classList.add('done'); writingDone = true;
-    } else {
-      sheet.classList.add('writing');               // blinking nib while the song's clock warms up
+      if (song){ var pr = song.play(); if (pr && pr.catch) pr.catch(function(){}); }
+      return;
     }
 
-    if (song){
-      song.preload = 'auto';
-      var p = song.play();
-      if (p && p.catch) p.catch(function(){ setPlaying(false); });   // autoplay blocked -> she taps ▶
-    } else {
-      untimedWrite();
-    }
+    // A short, deliberate beat (~2s) with the quill poised on the page, then the
+    // song and the synced handwriting begin together.
+    setTimeout(function(){
+      sheet.classList.add('writing');
+      if (song){
+        var p = song.play();
+        if (p && p.catch) p.catch(function(){ setPlaying(false); });   // autoplay blocked -> tap ▶
+      } else {
+        untimedWrite();
+      }
+    }, 2000);
   }
   seal.addEventListener('click', open);
 
