@@ -550,11 +550,14 @@
 
   // One animation frame: reveal exactly as much of the letter as the song
   // has played through, following the pre-measured rhythm curve.
+  var INTRO = 2;                 // seconds of "poised quill" before the hand starts writing
   function frame(){
     rafId = 0;
     var dur = song ? song.duration : 0;
-    if (dur && isFinite(dur) && dur > 0){
-      var f = song.currentTime / dur; if (f > 1) f = 1;
+    if (dur && isFinite(dur) && dur > INTRO){
+      var f = (song.currentTime - INTRO) / (dur - INTRO);
+      if (f < 0) f = 0; else if (f > 1) f = 1;
+      if (f > 0 && !sheet.classList.contains('writing')) sheet.classList.add('writing');
       var target = f * total, batch = '';
       while (shown < N && cum[shown + 1] <= target){ batch += LETTER.charAt(shown); shown++; }
       if (batch){ written.textContent += batch; keepCursorInView(); }
@@ -612,17 +615,16 @@
       return;
     }
 
-    // A short, deliberate beat (~2s) with the quill poised on the page, then the
-    // song and the synced handwriting begin together.
-    setTimeout(function(){
+    // Start the song now, inside the tap, so iOS allows it. The writing itself
+    // holds for a ~2s "poised quill" beat (see INTRO in frame()), then tracks the
+    // music all the way to the final note.
+    if (song){
+      var p = song.play();
+      if (p && p.catch) p.catch(function(){ setPlaying(false); });   // autoplay blocked -> tap ▶
+    } else {
       sheet.classList.add('writing');
-      if (song){
-        var p = song.play();
-        if (p && p.catch) p.catch(function(){ setPlaying(false); });   // autoplay blocked -> tap ▶
-      } else {
-        untimedWrite();
-      }
-    }, 2000);
+      untimedWrite();
+    }
   }
   seal.addEventListener('click', open);
 
