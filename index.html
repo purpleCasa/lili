@@ -237,10 +237,58 @@
   @keyframes ring{ 0%{ transform:scale(.9); opacity:.7; } 100%{ transform:scale(1.28); opacity:0; } }
   @keyframes crack{ 40%{ transform:scale(1.08) rotate(-3deg); } 100%{ transform:scale(.58) rotate(7deg); opacity:0; } }
 
+  /* ---------- Song play / pause button (rides in when the seal breaks) ---------- */
+  .play-btn{
+    position:fixed; z-index:25;
+    top:50%; right:max(env(safe-area-inset-right), 14px);
+    transform:translateY(-50%) scale(.6);
+    width:58px; height:58px; border-radius:50%;
+    -webkit-appearance:none; appearance:none; border:0;
+    cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+    display:flex; align-items:center; justify-content:center;
+    color:#f4e8c8;
+    background:radial-gradient(circle at 38% 30%, #b8443c 0%, #7c211d 60%, #571310 100%);
+    box-shadow:
+      inset 0 2px 6px rgba(255,180,170,.30),
+      inset 0 -7px 13px rgba(0,0,0,.45),
+      0 7px 18px rgba(0,0,0,.42),
+      0 0 0 1px var(--gilt-soft);                 /* gilt hairline echoing the frame */
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .8s ease,
+               transform .8s cubic-bezier(.2,.9,.3,1.3),
+               visibility .8s ease;
+  }
+  .play-btn.show{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transform:translateY(-50%) scale(1);
+  }
+  .play-btn.show:active{ transform:translateY(-50%) scale(.93); }
+
+  .play-btn svg{
+    width:26px; height:26px; fill:currentColor;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));
+    transform:translateX(1px);                    /* optical centering of the play triangle */
+  }
+  .play-btn.playing svg{ transform:none; }
+  .play-btn .ico-pause{ display:none; }
+  .play-btn.playing .ico-play{ display:none; }
+  .play-btn.playing .ico-pause{ display:block; }
+
+  /* gentle attention ring while idle, like the wax seal had */
+  .play-btn::after{
+    content:""; position:absolute; inset:-7px;
+    border-radius:50%; border:1px solid rgba(241,227,196,.42);
+    opacity:0; pointer-events:none;
+  }
+  .play-btn.show::after{ animation:ring 2.4s ease-out infinite; }
+  .play-btn.playing::after{ animation:none; opacity:0; }
+
   /* ---------- Respect reduced-motion ---------- */
   @media (prefers-reduced-motion: reduce){
     .seal-btn, .wax::after{ animation:none; }
     .cursor, .sheet.writing .cursor{ animation:none; }
+    .play-btn{ transition:opacity .3s ease; }
+    .play-btn.show::after{ animation:none; }
   }
 </style>
 
@@ -287,6 +335,20 @@
     </button>
   </div>
 
+  <!-- The song — the soundtrack the writing is timed to. Breaking the seal starts it, and
+       the letter finishes on its last note. Put your file next to this page as
+       cest-la-vie-lily.mp3 (any length — the writing auto-fits the song's duration). -->
+  <audio id="song" preload="none" src="cest-la-vie-lily.mp3"></audio>
+  <button class="play-btn" id="playBtn" type="button" aria-label="Включить песню" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path class="ico-play" d="M8 5.4v13.2l11-6.6z"/>
+      <g class="ico-pause">
+        <rect x="7"    y="5.5" width="3.6" height="13" rx="1.1"/>
+        <rect x="13.4" y="5.5" width="3.6" height="13" rx="1.1"/>
+      </g>
+    </svg>
+  </button>
+
 <script>
 (function(){
   "use strict";
@@ -297,6 +359,8 @@
   var sheet   = document.getElementById('sheet');
   var overlay = document.getElementById('overlay');
   var seal    = document.getElementById('seal');
+  var song    = document.getElementById('song');
+  var playBtn = document.getElementById('playBtn');
 
   // The letter, read straight from the screen-reader copy (one source of truth).
   var LETTER = ghost.textContent.replace(/\r\n/g, '\n');
@@ -444,49 +508,130 @@
     }
   }
 
-  function finish(){
-    AudioFX.stopScratch(0.7);
+  // Reflect playing / paused state on the button (icon, label, ARIA).
+  function setPlaying(on){
+    if (!playBtn) return;
+    playBtn.classList.toggle('playing', on);
+    playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    playBtn.setAttribute('aria-label', on ? 'Пауза' : 'Включить песню');
+  }
+
+  /* ------------------------------------------------------------------ *
+   *  The writing is driven by the SONG'S OWN CLOCK, so the final word  *
+   *  is written at the very moment the music ends. We pre-measure a    *
+   *  natural handwriting rhythm (longer pauses after '.', ',', line    *
+   *  breaks…) as cumulative weights, then map the song's progress onto *
+   *  that curve. Pause the song and the pen freezes with it; resume    *
+   *  and it carries on — they always finish together.                  *
+   * ------------------------------------------------------------------ */
+  var N   = LETTER.length;
+  var cum = new Float64Array(N + 1);          // cum[k] = relative time to have written k chars
+  for (var ci = 0; ci < N; ci++)
+    cum[ci + 1] = cum[ci] + delayFor(LETTER.charAt(ci), LETTER.charAt(ci + 1));
+  var total = cum[N] || 1;
+
+  var shown = 0, rafId = 0, framesOn = false, writingDone = false;
+
+  function finishWriting(){
+    if (writingDone) return;
+    writingDone = true;
+    stopFrames();
     sheet.classList.remove('writing');
     cursor.classList.add('done');
   }
 
-  function writeLetter(){
-    return (async function(){
-      await sleep(1000);                       // deliberate pause on blank paper
-      if (reduce){                             // reduced motion: reveal at once
-        written.textContent = LETTER;
-        finish();
-        return;
+  // One animation frame: reveal exactly as much of the letter as the song
+  // has played through, following the pre-measured rhythm curve.
+  function frame(){
+    rafId = 0;
+    var dur = song ? song.duration : 0;
+    if (dur && isFinite(dur) && dur > 0){
+      var f = song.currentTime / dur; if (f > 1) f = 1;
+      var target = f * total, batch = '';
+      while (shown < N && cum[shown + 1] <= target){ batch += LETTER.charAt(shown); shown++; }
+      if (batch){ written.textContent += batch; keepCursorInView(); }
+    }
+    if (shown >= N){ finishWriting(); return; }
+    if (framesOn) rafId = requestAnimationFrame(frame);
+  }
+  function startFrames(){
+    if (framesOn || writingDone || reduce) return;
+    framesOn = true;
+    if (!rafId) rafId = requestAnimationFrame(frame);
+  }
+  function stopFrames(){
+    framesOn = false;
+    if (rafId){ cancelAnimationFrame(rafId); rafId = 0; }
+  }
+
+  // Fallback only (song missing / blocked): the original self-paced typing,
+  // so the letter still appears even when there is no audio to ride.
+  function untimedWrite(){
+    if (reduce || writingDone) return;
+    sheet.classList.add('writing');
+    (async function(){
+      while (shown < N){
+        written.textContent += LETTER.charAt(shown); shown++;
+        if ((shown & 3) === 0) keepCursorInView();
+        await sleep(delayFor(LETTER.charAt(shown - 1), LETTER.charAt(shown)));
       }
-      AudioFX.startScratch();
-      sheet.classList.add('writing');
-      for (var i = 0; i < LETTER.length; i++){
-        var ch = LETTER.charAt(i);
-        written.textContent += ch;
-        if (ch.trim() !== '') AudioFX.tick();
-        if ((i & 3) === 0) keepCursorInView();    // throttle the auto-scroll
-        await sleep(delayFor(ch, LETTER.charAt(i + 1)));
-      }
-      keepCursorInView();
-      finish();
+      keepCursorInView(); finishWriting();
     })();
   }
 
   /* ------------------------------------------------------------------ *
-   *  Opening the letter (the user gesture that unlocks audio)          *
+   *  Opening the letter: the one gesture that unlocks audio AND starts *
+   *  the song together with the synced writing.                        *
    * ------------------------------------------------------------------ */
   var opened = false;
   function open(){
     if (opened) return;
     opened = true;
+
     AudioFX.ensure();
     AudioFX.resume();
-    AudioFX.seal();                 // fire the first sound inside the gesture (iOS requirement)
+    AudioFX.seal();                 // the wax crack — must fire inside the gesture on iOS
+
     seal.classList.add('breaking');
     overlay.classList.add('hidden');
-    writeLetter();
+    if (playBtn) playBtn.classList.add('show');     // the song control rides in on the right
+
+    if (reduce){                    // reduced motion: reveal the letter at once, still play the song
+      written.textContent = LETTER; shown = N;
+      cursor.classList.add('done'); writingDone = true;
+    } else {
+      sheet.classList.add('writing');               // blinking nib while the song's clock warms up
+    }
+
+    if (song){
+      song.preload = 'auto';
+      var p = song.play();
+      if (p && p.catch) p.catch(function(){ setPlaying(false); });   // autoplay blocked -> she taps ▶
+    } else {
+      untimedWrite();
+    }
   }
   seal.addEventListener('click', open);
+
+  /* ----- The song is the conductor: its events keep the pen and the button in sync ----- */
+  if (song){
+    song.addEventListener('play',  function(){ setPlaying(true);  startFrames(); });
+    song.addEventListener('pause', function(){ setPlaying(false); stopFrames(); });
+    song.addEventListener('ended', function(){
+      setPlaying(false); stopFrames();
+      if (shown < N){ written.textContent += LETTER.slice(shown); shown = N; }   // never strand the last words
+      finishWriting();
+    });
+    song.addEventListener('error', function(){                       // song unavailable -> write anyway
+      if (shown === 0) untimedWrite();
+    });
+  }
+  if (song && playBtn){
+    playBtn.addEventListener('click', function(){
+      if (song.paused){ var p = song.play(); if (p && p.catch) p.catch(function(){}); }
+      else { song.pause(); }
+    });
+  }
 })();
 </script>
 </body>
